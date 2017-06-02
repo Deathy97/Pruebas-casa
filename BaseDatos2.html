@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<title>Lectura de Productos</title>
+		<meta charset="utf-8" /> <!para que entienda todos los caracteres>
+		<link rel="stylesheet" type="text/css" href="Ejemplo1.css">
+		<script language="JavaScript">
+
+		function ver(){
+			document.getElementById("cesta").innerHTML = "<br><br>";
+			for(i=0; i<sessionStorage.length; i++)
+				document.getElementById("cesta").innerHTML += "<table align=center border=1><tr><td><img src=Productos/" + sessionStorage.key(i) + ".jpg></td><td>" + sessionStorage.getItem(sessionStorage.key(i)) + "</td></tr></table>";
+		}
+
+		function cargar(codigo){
+			if(sessionStorage.getItem(codigo) == null)
+				sessionStorage.setItem(codigo, 1);
+			else
+				sessionStorage.setItem(codigo, parseInt(sessionStorage.getItem(codigo)) + 1);
+			ver();
+		}
+		
+		function empezar(){
+			var db = openDatabase('Tienda.db', '1.0', 'Tienda DB', 2 * 1024 * 1024);
+			
+			db.transaction(function (tx) {
+				
+   				tx.executeSql('SELECT * FROM Productos', [], function (tx, results) {
+					var len = results.rows.length, i;
+      					msg = "<p>Found rows: " + len + "</p>";
+					document.querySelector('#status').innerHTML +=  msg;
+					tabla = "<table align=center border=1><tr>";
+					for (i = 0; i < len; i++){
+         					tabla += "<td><a href='' onclick='cargar(\"" + results.rows.item(i).codigo + "\");return false;'><img src=Productos/" + results.rows.item(i).codigo + ".jpg></a><br> " + results.rows.item(i).precio + " €</td>";
+      					}
+					tabla += "</tr></table>";
+					document.querySelector('#status').innerHTML +=  tabla;
+	
+   				}, null);
+			});
+		}
+
+		function insertar(){
+			var db = openDatabase('Tienda.db', '1.0', 'Tienda DB', 2 * 1024 * 1024);
+			db.transaction(function (tx) {
+				for(i=0; i<sessionStorage.length; i++)
+					tx.executeSql('INSERT INTO Compras(producto, unidades, comprador) VALUES ("' + sessionStorage.key(i) + '", ' + sessionStorage.getItem(sessionStorage.key(i)) + ', "' + comprador.value + '")');
+			});
+		}
+
+
+	</script>
+</head>	
+<body onload="empezar()">
+
+<div id="status" name="status">Status Message</div>
+
+<div id="cesta"></div>
+<br>
+<center>
+Comprador : <input size=30 id=comprador name=comprador><br>
+<input type=button value="Insertar en Compras" onclick="insertar()"></center>
+
+</body>
+</html>
